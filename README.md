@@ -1,6 +1,9 @@
 # Policy Enforcement Point API
 
-The Policy Enforcement Point (PEP) API is a RESTful web service for the Access Control Service (ACS) entry point. The PEP delegates the access decision to the Context Handler API, and it utilizes the Document Segmentation Service ([DSS](https://github.com/bhits/dss-api)) for segmenting CCD documents according to a patient's granular consent. PEP gives the same response for both *"No applicable consents"* and *"No documents found"* cases to avoid exposing the existence of a patient's consent.
+The Policy Enforcement Point (PEP) Service is one of the core components of the Consent2Share(C2S) application. 
+The PEP delegates the access decision to the Context Handler API, and it utilizes the Document Segmentation Service 
+([DSS](https://github.com/bhits-dev/dss-api)) for segmenting CCD documents according to a patient's granular consent. 
+PEP gives the same response for both *"No applicable consents"* and *"No documents found"* cases to avoid exposing the existence of a patient's consent.
 
 ## Build
 
@@ -32,11 +35,11 @@ This is a [Spring Boot](https://projects.spring.io/spring-boot/) project and ser
 + Run as a JAR file: `java -jar pep-x.x.x-SNAPSHOT.jar <additional program arguments>`
 + Run as a Docker Container: `docker run -d bhits/pep:latest <additional program arguments>`
 
-*NOTE: In order for this API to fully function as a microservice in C2S Application, it is also required to setup the dependency microservices and support level infrastructure. Please refer to the [C2S Deployment Guide](https://github.com/bhits/consent2share/releases/download/2.1.0/c2s-deployment-guide.pdf) for instructions to setup the C2S infrastructure.*
+*NOTE: In order for this API to fully function as a microservice in C2S Application, it is also required to setup the dependency microservices and support level infrastructure. Please refer to the [C2S Deployment Guide](https://github.com/bhits-dev/consent2share/releases/download/2.1.0/c2s-deployment-guide.pdf) for instructions to setup the C2S infrastructure.*
 
 ## Configure
 
-This API utilizes [`Configuration Server`](https://github.com/bhits/config-server) which is based on [Spring Cloud Config](https://github.com/spring-cloud/spring-cloud-config) to manage externalized configuration, which is stored in a `Configuration Data Git Repository`. We provide a [`Default Configuration Data Git Repository`]( https://github.com/bhits/c2s-config-data).
+This API utilizes [`Configuration Server`](https://github.com/bhits-dev/config-server) which is based on [Spring Cloud Config](https://github.com/spring-cloud/spring-cloud-config) to manage externalized configuration, which is stored in a `Configuration Data Git Repository`. We provide a [`Default Configuration Data Git Repository`]( https://github.com/bhits-dev/c2s-config-data).
 
 This API can run with the default configuration, which is targeted for a local development environment. Default configuration data is from three places: `bootstrap.yml`, `application.yml`, and the data which `Configuration Server` reads from `Configuration Data Git Repository`. Both `bootstrap.yml` and `application.yml` files are located in the `resources` folder of this source code.
 
@@ -110,6 +113,6 @@ If you have any questions, comments, or concerns please see [Consent2Share](http
 
 ## Report Issues
 
-Please use [GitHub Issues](https://github.com/bhits/pep-api/issues) page to report issues.
+Please use [GitHub Issues](https://github.com/bhits-dev/pep-api/issues) page to report issues.
 
 [//]: # (License)
