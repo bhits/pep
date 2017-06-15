@@ -43,7 +43,7 @@ public class PolicyEnforcementPointImplTest {
     private DssService dssService;
 
     @InjectMocks
-    private PolicyEnforcementPointImpl sut;
+    private PolicyEnforcementPointServiceImpl sut;
 
     @Test
     public void accessDocument_When_PDP_Decision_Is_Permit() throws Exception {
