@@ -5,15 +5,16 @@ import gov.samhsa.c2s.common.log.LoggerFactory;
 import gov.samhsa.c2s.pep.service.PolicyEnforcementPointService;
 import gov.samhsa.c2s.pep.service.dto.AccessRequestDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
 @RestController
+@Slf4j
 public class PolicyEnforcementPointRestController {
 
-    private final Logger logger = LoggerFactory.getLogger(this);
 
     @Autowired
     private PolicyEnforcementPointService policyEnforcementPointService;

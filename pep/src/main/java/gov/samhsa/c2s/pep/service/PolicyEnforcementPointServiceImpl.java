@@ -12,7 +12,9 @@ import gov.samhsa.c2s.pep.infrastructure.dto.XacmlResult;
 import gov.samhsa.c2s.pep.service.dto.AccessRequestDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseDto;
 import gov.samhsa.c2s.pep.service.exception.DocumentNotFoundException;
+import gov.samhsa.c2s.pep.service.exception.DssClientInterfaceException;
 import gov.samhsa.c2s.pep.service.exception.InternalServerErrorException;
+import gov.samhsa.c2s.pep.service.exception.InvalidDocumentException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -50,7 +52,32 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
 
         final DSSRequest dssRequest = accessRequest.toDSSRequest(xacmlResult);
         log.debug(dssRequest.toString());
-        final DSSResponse dssResponse = dssService.segmentDocument(dssRequest);
+        DSSResponse dssResponse;
+        try {
+            dssResponse = dssService.segmentDocument(dssRequest);
+        } catch (HystrixRuntimeException hystrixErr) {
+            Throwable causedBy = hystrixErr.getCause();
+
+            if (!(causedBy instanceof FeignException)) {
+                log.error("Unexpected instance of HystrixRuntimeException has occurred", hystrixErr);
+                throw new DssClientInterfaceException("An unknown error occurred while attempting to communicate with" +
+                        " DSS service");
+            }
+
+            int causedByStatus = ((FeignException) causedBy).status();
+
+            switch (causedByStatus) {
+                case 400:
+                    log.error("DSS client returned a 400 - BAD REQUEST status, indicating invalid document was passed" +
+                            " to DSS client", causedBy);
+                    throw new InvalidDocumentException("Invalid document was passed to DSS client");
+                default:
+                    log.error("DSS client returned an unexpected instance of FeignException", causedBy);
+                    throw new DssClientInterfaceException("An unknown error occurred while attempting to communicate " +
+                            "with" +
+                            " DSS service");
+            }
+        }
         log.debug(dssResponse.toString());
         final AccessResponseDto accessResponse = AccessResponseDto.from(dssResponse);
         log.debug(accessResponse.toString());
