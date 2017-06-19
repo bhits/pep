@@ -54,7 +54,9 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
         log.debug(dssRequest.toString());
         DSSResponse dssResponse;
         try {
+            log.debug("Invoking dss feign client - Start");
             dssResponse = dssService.segmentDocument(dssRequest);
+            log.debug("Invoking dss feign client - End");
         } catch (HystrixRuntimeException hystrixErr) {
             Throwable causedBy = hystrixErr.getCause();
 
@@ -94,8 +96,11 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
     }
 
     private XacmlResponseDto enforcePolicy(XacmlRequestDto xacmlRequest) {
+        log.debug("Invoking context-handler feign client - Start");
+        XacmlResponseDto xacmlResponseDto;
         try {
-            return contextHandler.enforcePolicy(xacmlRequest);
+            xacmlResponseDto =  contextHandler.enforcePolicy(xacmlRequest);
+            log.debug("Invoking context-handler feign client - End");
         } catch (HystrixRuntimeException e) {
             final FeignException feignException = Optional.of(e)
                     .map(HystrixRuntimeException::getCause)
@@ -114,6 +119,8 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
                 throw new InternalServerErrorException(e);
             }
         }
+
+        return xacmlResponseDto;
     }
 
     private HttpStatus getHttpStatus(FeignException e) {
