@@ -40,11 +40,9 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
     @Override
     public AccessResponseDto accessDocument(AccessRequestDto accessRequest) {
         log.info("Initiating PolicyEnforcementPointService.accessDocument flow");
-        log.debug(accessRequest.toString());
         final XacmlRequestDto xacmlRequest = accessRequest.getXacmlRequest();
         log.debug(xacmlRequest.toString());
         final XacmlResponseDto xacmlResponse = enforcePolicy(xacmlRequest);
-        log.debug(xacmlResponse.toString());
         final XacmlResult xacmlResult = XacmlResult.from(xacmlRequest, xacmlResponse);
         log.debug(xacmlResult.toString());
 
