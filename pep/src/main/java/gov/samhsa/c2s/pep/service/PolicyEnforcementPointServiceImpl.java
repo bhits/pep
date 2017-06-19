@@ -11,10 +11,10 @@ import gov.samhsa.c2s.pep.infrastructure.dto.XacmlResponseDto;
 import gov.samhsa.c2s.pep.infrastructure.dto.XacmlResult;
 import gov.samhsa.c2s.pep.service.dto.AccessRequestDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseDto;
-import gov.samhsa.c2s.pep.service.exception.NoDocumentFoundException;
 import gov.samhsa.c2s.pep.service.exception.DssClientInterfaceException;
 import gov.samhsa.c2s.pep.service.exception.InternalServerErrorException;
 import gov.samhsa.c2s.pep.service.exception.InvalidDocumentException;
+import gov.samhsa.c2s.pep.service.exception.NoDocumentFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -87,13 +87,10 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
 
 
     private void assertPDPPermitDecision(XacmlResponseDto xacmlResponse) {
-/*        Optional.of(xacmlResponse)
+        Optional.of(xacmlResponse)
                 .map(XacmlResponseDto::getPdpDecision)
                 .filter(PERMIT::equalsIgnoreCase)
-                .orElseThrow(NoDocumentFoundException::new);*/
-        if(! xacmlResponse.getPdpDecision().equalsIgnoreCase("PERMIT")){
-            throw  new NoDocumentFoundException();
-        }
+                .orElseThrow(NoDocumentFoundException::new);
     }
 
     private XacmlResponseDto enforcePolicy(XacmlRequestDto xacmlRequest) {
