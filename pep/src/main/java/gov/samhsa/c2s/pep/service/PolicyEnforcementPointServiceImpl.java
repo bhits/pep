@@ -11,10 +11,10 @@ import gov.samhsa.c2s.pep.infrastructure.dto.XacmlResponseDto;
 import gov.samhsa.c2s.pep.infrastructure.dto.XacmlResult;
 import gov.samhsa.c2s.pep.service.dto.AccessRequestDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseDto;
-import gov.samhsa.c2s.pep.service.exception.DocumentNotFoundException;
 import gov.samhsa.c2s.pep.service.exception.DssClientInterfaceException;
 import gov.samhsa.c2s.pep.service.exception.InternalServerErrorException;
 import gov.samhsa.c2s.pep.service.exception.InvalidDocumentException;
+import gov.samhsa.c2s.pep.service.exception.NoDocumentFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -90,7 +90,7 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
         Optional.of(xacmlResponse)
                 .map(XacmlResponseDto::getPdpDecision)
                 .filter(PERMIT::equalsIgnoreCase)
-                .orElseThrow(DocumentNotFoundException::new);
+                .orElseThrow(NoDocumentFoundException::new);
     }
 
     private XacmlResponseDto enforcePolicy(XacmlRequestDto xacmlRequest) {
@@ -108,7 +108,7 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
             if (HttpStatus.NOT_FOUND.equals(getHttpStatus(feignException))) {
                 log.info("consent not found");
                 log.debug(e.getMessage(), e);
-                throw new DocumentNotFoundException();
+                throw new NoDocumentFoundException();
             } else {
                 log.error(e.getMessage(), e);
                 throw new InternalServerErrorException(e);

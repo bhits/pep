@@ -7,7 +7,7 @@ import gov.samhsa.c2s.pep.infrastructure.DssService;
 import gov.samhsa.c2s.pep.infrastructure.dto.*;
 import gov.samhsa.c2s.pep.service.dto.AccessRequestDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseDto;
-import gov.samhsa.c2s.pep.service.exception.DocumentNotFoundException;
+import gov.samhsa.c2s.pep.service.exception.NoDocumentFoundException;
 import gov.samhsa.c2s.pep.service.exception.InternalServerErrorException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -103,7 +103,7 @@ public class PolicyEnforcementPointImplTest {
     @Test
     public void accessDocument_When_PDP_Decision_Is_Deny() throws Exception {
         // Arrange
-        thrown.expect(DocumentNotFoundException.class);
+        thrown.expect(NoDocumentFoundException.class);
         final String recipientNpi = "recipientNpi";
         final String intermediaryNpi = "intermediaryNpi";
         final SubjectPurposeOfUse purposeOfUse = SubjectPurposeOfUse.HEALTHCARE_TREATMENT;
@@ -160,7 +160,7 @@ public class PolicyEnforcementPointImplTest {
     @Test
     public void accessDocument_When_Context_Hander_Returns_Not_Found_Status() throws Exception {
         // Arrange
-        thrown.expect(DocumentNotFoundException.class);
+        thrown.expect(NoDocumentFoundException.class);
         final String recipientNpi = "recipientNpi";
         final String intermediaryNpi = "intermediaryNpi";
         final SubjectPurposeOfUse purposeOfUse = SubjectPurposeOfUse.HEALTHCARE_TREATMENT;

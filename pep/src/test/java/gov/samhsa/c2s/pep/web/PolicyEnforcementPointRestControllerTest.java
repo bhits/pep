@@ -6,7 +6,7 @@ import gov.samhsa.c2s.pep.infrastructure.dto.SubjectPurposeOfUse;
 import gov.samhsa.c2s.pep.infrastructure.dto.XacmlRequestDto;
 import gov.samhsa.c2s.pep.service.PolicyEnforcementPointService;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseDto;
-import gov.samhsa.c2s.pep.service.exception.DocumentNotFoundException;
+import gov.samhsa.c2s.pep.service.exception.NoDocumentFoundException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -120,7 +120,7 @@ public class PolicyEnforcementPointRestControllerTest {
                 req -> req.getXacmlRequest().equals(xacmlRequest) &&
                         document.equals(new String(req.getDocument(), documentEncoding)) &&
                         documentEncodingString.equals(req.getDocumentEncoding().get())
-        )))).thenThrow(DocumentNotFoundException.class);
+        )))).thenThrow(NoDocumentFoundException.class);
 
         // Act and Assert
         mvc.perform(post("/access")
