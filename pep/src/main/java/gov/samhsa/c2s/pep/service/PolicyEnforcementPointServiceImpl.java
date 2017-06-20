@@ -41,10 +41,10 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
     public AccessResponseDto accessDocument(AccessRequestDto accessRequest) {
         log.info("Initiating PolicyEnforcementPointService.accessDocument flow");
         final XacmlRequestDto xacmlRequest = accessRequest.getXacmlRequest();
-        log.debug(xacmlRequest.toString());
+        log.debug("XacmlRequestDto: " + xacmlRequest.toString());
         final XacmlResponseDto xacmlResponse = enforcePolicy(xacmlRequest);
         final XacmlResult xacmlResult = XacmlResult.from(xacmlRequest, xacmlResponse);
-        log.debug(xacmlResult.toString());
+        log.debug("XacmlResult: " + xacmlResult.toString());
 
         assertPDPPermitDecision(xacmlResponse);
 
@@ -97,8 +97,7 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
         log.debug("Invoking context-handler feign client - Start");
         XacmlResponseDto xacmlResponseDto;
         try {
-            xacmlResponseDto =  contextHandler.enforcePolicy(xacmlRequest);
-            log.debug("Invoking context-handler feign client - End");
+            xacmlResponseDto = contextHandler.enforcePolicy(xacmlRequest);
         } catch (HystrixRuntimeException e) {
             final FeignException feignException = Optional.of(e)
                     .map(HystrixRuntimeException::getCause)
@@ -117,6 +116,7 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
                 throw new InternalServerErrorException(e);
             }
         }
+        log.debug("Invoking context-handler feign client - End" + xacmlResponseDto);
 
         return xacmlResponseDto;
     }
