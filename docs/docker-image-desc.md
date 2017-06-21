@@ -6,7 +6,7 @@ The PEP provides service for segmenting CCD documents according to a patient's g
 
 # Supported Source Code Tags and Current `Dockerfile` Link
 
-[`2.0.0 (latest)`](https://github.com/bhitsdev/pep/releases/tag/2.0.0)
+[`2.0.0 (latest)`](https://github.com/bhits-dev/pep/releases/tag/2.0.0)
 
 [`Current Dockerfile`](https://github.com/bhits-dev/pep/blob/master/pep/src/main/docker/Dockerfile)
 
@@ -19,7 +19,7 @@ The PEP delegates the access decision to the Context Handler API, and it utilize
 ([DSS](https://github.com/bhits-dev/dss-api)) for segmenting CCD documents according to a patient's granular consent. 
 PEP gives the same response for both *"No applicable consents"* and *"No documents found"* cases to avoid exposing the existence of a patient's consent.
 
-For more information and related downloads for Consent2Share, please visit [Consent2Share](https://bhits.github.io/consent2share/).
+For more information and related downloads for Consent2Share, please visit [Consent2Share](https://bhits-dev.github.io/consent2share/).
 # How to use this image
 
 ## Start a PEP instance
