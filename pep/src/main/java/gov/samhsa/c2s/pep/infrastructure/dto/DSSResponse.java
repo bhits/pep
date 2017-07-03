@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -11,6 +12,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"segmentedDocument", "tryPolicyDocument"})
 public class DSSResponse {
 
     @NotEmpty

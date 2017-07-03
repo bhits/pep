@@ -6,6 +6,7 @@ import gov.samhsa.c2s.pep.infrastructure.dto.SubjectPurposeOfUse;
 import gov.samhsa.c2s.pep.infrastructure.dto.XacmlRequestDto;
 import gov.samhsa.c2s.pep.service.PolicyEnforcementPointService;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseDto;
+import gov.samhsa.c2s.pep.service.dto.AccessResponseWithDocumentDto;
 import gov.samhsa.c2s.pep.service.exception.NoDocumentFoundException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -73,13 +74,13 @@ public class PolicyEnforcementPointRestControllerTest {
         final String segmentedDocument = "segmentedDocument";
         final byte[] segmentedDocumentBytes = segmentedDocument.getBytes(documentEncoding);
         final String segmentedDocumentBytesEncodedString = Base64.getEncoder().encodeToString(segmentedDocumentBytes);
-        final AccessResponseDto response = AccessResponseDto.builder()
+        final AccessResponseDto response = AccessResponseWithDocumentDto.builder()
                 .segmentedDocument(segmentedDocumentBytes)
                 .segmentedDocumentEncoding(documentEncodingString)
                 .build();
         when(policyEnforcementPointService.accessDocument(argThat(matching(
                 req -> req.getXacmlRequest().equals(xacmlRequest) &&
-                        document.equals(new String(req.getDocument(), documentEncoding)) &&
+                        document.equals(new String(req.getDocument().get(), documentEncoding)) &&
                         documentEncodingString.equals(req.getDocumentEncoding().get())
         )))).thenReturn(response);
 
@@ -92,7 +93,7 @@ public class PolicyEnforcementPointRestControllerTest {
                 .andExpect(jsonPath("$.segmentedDocumentEncoding", is(documentEncodingString)));
         verify(policyEnforcementPointService, times(1)).accessDocument(argThat(matching(
                 req -> req.getXacmlRequest().equals(xacmlRequest) &&
-                        document.equals(new String(req.getDocument(), documentEncoding)) &&
+                        document.equals(new String(req.getDocument().get(), documentEncoding)) &&
                         documentEncodingString.equals(req.getDocumentEncoding().get())
         )));
     }
@@ -118,7 +119,7 @@ public class PolicyEnforcementPointRestControllerTest {
                 .build();
         when(policyEnforcementPointService.accessDocument(argThat(matching(
                 req -> req.getXacmlRequest().equals(xacmlRequest) &&
-                        document.equals(new String(req.getDocument(), documentEncoding)) &&
+                        document.equals(new String(req.getDocument().get(), documentEncoding)) &&
                         documentEncodingString.equals(req.getDocumentEncoding().get())
         )))).thenThrow(NoDocumentFoundException.class);
 
@@ -129,7 +130,7 @@ public class PolicyEnforcementPointRestControllerTest {
                 .andExpect(status().isNotFound());
         verify(policyEnforcementPointService, times(1)).accessDocument(argThat(matching(
                 req -> req.getXacmlRequest().equals(xacmlRequest) &&
-                        document.equals(new String(req.getDocument(), documentEncoding)) &&
+                        document.equals(new String(req.getDocument().get(), documentEncoding)) &&
                         documentEncodingString.equals(req.getDocumentEncoding().get())
         )));
     }
