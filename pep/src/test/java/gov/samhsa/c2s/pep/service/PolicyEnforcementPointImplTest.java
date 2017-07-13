@@ -4,11 +4,16 @@ import com.netflix.hystrix.exception.HystrixRuntimeException;
 import feign.FeignException;
 import gov.samhsa.c2s.pep.infrastructure.ContextHandlerService;
 import gov.samhsa.c2s.pep.infrastructure.DssService;
-import gov.samhsa.c2s.pep.infrastructure.dto.*;
+import gov.samhsa.c2s.pep.infrastructure.dto.DSSResponse;
+import gov.samhsa.c2s.pep.infrastructure.dto.PatientIdDto;
+import gov.samhsa.c2s.pep.infrastructure.dto.SubjectPurposeOfUse;
+import gov.samhsa.c2s.pep.infrastructure.dto.XacmlRequestDto;
+import gov.samhsa.c2s.pep.infrastructure.dto.XacmlResponseDto;
 import gov.samhsa.c2s.pep.service.dto.AccessRequestDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseDto;
-import gov.samhsa.c2s.pep.service.exception.NoDocumentFoundException;
+import gov.samhsa.c2s.pep.service.dto.AccessResponseWithDocumentDto;
 import gov.samhsa.c2s.pep.service.exception.InternalServerErrorException;
+import gov.samhsa.c2s.pep.service.exception.NoDocumentFoundException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -27,8 +32,12 @@ import java.util.Optional;
 import static gov.samhsa.c2s.common.unit.matcher.ArgumentMatchers.matching;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PolicyEnforcementPointImplTest {
@@ -74,14 +83,15 @@ public class PolicyEnforcementPointImplTest {
                         root.equals(dssRequest.getXacmlResult().getHomeCommunityId()) &&
                         pdpObligations.containsAll(dssRequest.getXacmlResult().getPdpObligations()) &&
                         dssRequest.getXacmlResult().getPdpObligations().containsAll(pdpObligations))))).thenReturn(dssResponse);
-        final AccessRequestDto request = AccessRequestDto.builder().xacmlRequest(xacmlRequest).document(documentBytes).documentEncoding(Optional.of(documentEncoding.name())).build();
+        final AccessRequestDto request = AccessRequestDto.builder().xacmlRequest(xacmlRequest).document(Optional.of(documentBytes)).documentEncoding(Optional.of(documentEncoding.name())).build();
 
         // Act
         final AccessResponseDto response = sut.accessDocument(request);
 
         // Assert
+        assertTrue(response instanceof AccessResponseWithDocumentDto);
         assertNotNull(response);
-        assertEquals(segmentedDocument, new String(response.getSegmentedDocument(), documentEncoding));
+        assertEquals(segmentedDocument, new String(((AccessResponseWithDocumentDto)response).getSegmentedDocument(), documentEncoding));
         verify(contextHandler, times(1)).enforcePolicy(argThat(matching(
                 xacmlRequestDto -> recipientNpi.equals(xacmlRequest.getRecipientNpi()) &&
                         intermediaryNpi.equals(xacmlRequest.getIntermediaryNpi()) &&
@@ -131,14 +141,15 @@ public class PolicyEnforcementPointImplTest {
                         root.equals(dssRequest.getXacmlResult().getHomeCommunityId()) &&
                         pdpObligations.containsAll(dssRequest.getXacmlResult().getPdpObligations()) &&
                         dssRequest.getXacmlResult().getPdpObligations().containsAll(pdpObligations))))).thenReturn(dssResponse);
-        final AccessRequestDto request = AccessRequestDto.builder().xacmlRequest(xacmlRequest).document(documentBytes).documentEncoding(Optional.of(documentEncoding.name())).build();
+        final AccessRequestDto request = AccessRequestDto.builder().xacmlRequest(xacmlRequest).document(Optional.of(documentBytes)).documentEncoding(Optional.of(documentEncoding.name())).build();
 
         // Act
         final AccessResponseDto response = sut.accessDocument(request);
 
         // Assert
+        assertTrue(response instanceof AccessResponseWithDocumentDto);
         assertNotNull(response);
-        assertEquals(segmentedDocument, new String(response.getSegmentedDocument(), documentEncoding));
+        assertEquals(segmentedDocument, new String(((AccessResponseWithDocumentDto)response).getSegmentedDocument(), documentEncoding));
         verify(contextHandler, times(1)).enforcePolicy(argThat(matching(
                 xacmlRequestDto -> recipientNpi.equals(xacmlRequest.getRecipientNpi()) &&
                         intermediaryNpi.equals(xacmlRequest.getIntermediaryNpi()) &&
@@ -192,14 +203,15 @@ public class PolicyEnforcementPointImplTest {
                         root.equals(dssRequest.getXacmlResult().getHomeCommunityId()) &&
                         pdpObligations.containsAll(dssRequest.getXacmlResult().getPdpObligations()) &&
                         dssRequest.getXacmlResult().getPdpObligations().containsAll(pdpObligations))))).thenReturn(dssResponse);
-        final AccessRequestDto request = AccessRequestDto.builder().xacmlRequest(xacmlRequest).document(documentBytes).documentEncoding(Optional.of(documentEncoding.name())).build();
+        final AccessRequestDto request = AccessRequestDto.builder().xacmlRequest(xacmlRequest).document(Optional.of(documentBytes)).documentEncoding(Optional.of(documentEncoding.name())).build();
 
         // Act
         final AccessResponseDto response = sut.accessDocument(request);
 
         // Assert
         assertNotNull(response);
-        assertEquals(segmentedDocument, new String(response.getSegmentedDocument(), documentEncoding));
+        assertTrue(response instanceof  AccessResponseWithDocumentDto);
+        assertEquals(segmentedDocument, new String(((AccessResponseWithDocumentDto)response).getSegmentedDocument(), documentEncoding));
         verify(contextHandler, times(1)).enforcePolicy(argThat(matching(
                 xacmlRequestDto -> recipientNpi.equals(xacmlRequest.getRecipientNpi()) &&
                         intermediaryNpi.equals(xacmlRequest.getIntermediaryNpi()) &&
@@ -253,14 +265,15 @@ public class PolicyEnforcementPointImplTest {
                         root.equals(dssRequest.getXacmlResult().getHomeCommunityId()) &&
                         pdpObligations.containsAll(dssRequest.getXacmlResult().getPdpObligations()) &&
                         dssRequest.getXacmlResult().getPdpObligations().containsAll(pdpObligations))))).thenReturn(dssResponse);
-        final AccessRequestDto request = AccessRequestDto.builder().xacmlRequest(xacmlRequest).document(documentBytes).documentEncoding(Optional.of(documentEncoding.name())).build();
+        final AccessRequestDto request = AccessRequestDto.builder().xacmlRequest(xacmlRequest).document(Optional.of(documentBytes)).documentEncoding(Optional.of(documentEncoding.name())).build();
 
         // Act
         final AccessResponseDto response = sut.accessDocument(request);
 
         // Assert
         assertNotNull(response);
-        assertEquals(segmentedDocument, new String(response.getSegmentedDocument(), documentEncoding));
+        assertTrue(response instanceof AccessResponseWithDocumentDto);
+        assertEquals(segmentedDocument, new String(((AccessResponseWithDocumentDto)response).getSegmentedDocument(), documentEncoding));
         verify(contextHandler, times(1)).enforcePolicy(argThat(matching(
                 xacmlRequestDto -> recipientNpi.equals(xacmlRequest.getRecipientNpi()) &&
                         intermediaryNpi.equals(xacmlRequest.getIntermediaryNpi()) &&

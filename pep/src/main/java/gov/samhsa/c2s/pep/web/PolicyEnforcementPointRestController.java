@@ -1,20 +1,18 @@
 package gov.samhsa.c2s.pep.web;
 
-import gov.samhsa.c2s.common.log.Logger;
-import gov.samhsa.c2s.common.log.LoggerFactory;
 import gov.samhsa.c2s.pep.service.PolicyEnforcementPointService;
 import gov.samhsa.c2s.pep.service.dto.AccessRequestDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseDto;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
 @RestController
-@Slf4j
 public class PolicyEnforcementPointRestController {
-
 
     @Autowired
     private PolicyEnforcementPointService policyEnforcementPointService;
@@ -23,5 +21,4 @@ public class PolicyEnforcementPointRestController {
     public AccessResponseDto access(@Valid @RequestBody AccessRequestDto accessRequest) {
         return policyEnforcementPointService.accessDocument(accessRequest);
     }
-
 }
