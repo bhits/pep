@@ -55,24 +55,16 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
                 logger.debug("Invoking dss feign client - Start");
                 dssResponse = dssService.segmentDocument(dssRequest);
                 logger.debug("Invoking dss feign client - End");
-            } catch (HystrixRuntimeException hystrixErr) {
-                Throwable causedBy = hystrixErr.getCause();
-
-                if (!(causedBy instanceof FeignException)) {
-                    logger.error("Unexpected instance of HystrixRuntimeException has occurred", hystrixErr);
-                    throw new DssClientInterfaceException("An unknown error occurred while attempting to communicate with" +
-                            " DSS service");
-                }
-
-                int causedByStatus = ((FeignException) causedBy).status();
+            } catch (FeignException fe) {
+                int causedByStatus = fe.status();
 
                 switch (causedByStatus) {
                     case 400:
                         logger.error("DSS client returned a 400 - BAD REQUEST status, indicating invalid document was passed" +
-                                " to DSS client", causedBy);
+                                " to DSS client", fe);
                         throw new InvalidDocumentException("Invalid document was passed to DSS client");
                     default:
-                        logger.error("DSS client returned an unexpected instance of FeignException", causedBy);
+                        logger.error("DSS client returned an unexpected instance of FeignException", fe);
                         throw new DssClientInterfaceException("An unknown error occurred while attempting to communicate " +
                                 "with" +
                                 " DSS service");
@@ -102,22 +94,17 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
         XacmlResponseDto xacmlResponseDto;
         try {
             xacmlResponseDto = contextHandler.enforcePolicy(xacmlRequest);
-        } catch (HystrixRuntimeException e) {
-            final FeignException feignException = Optional.of(e)
-                    .map(HystrixRuntimeException::getCause)
-                    .filter(FeignException.class::isInstance)
-                    .map(FeignException.class::cast)
-                    .orElseThrow(() -> {
-                        logger.error(e.getMessage(), e);
-                        return new InternalServerErrorException(e);
-                    });
-            if (HttpStatus.NOT_FOUND.equals(getHttpStatus(feignException))) {
-                logger.info("consent not found");
-                logger.debug(e.getMessage(), e);
-                throw new NoDocumentFoundException();
-            } else {
-                logger.error(e.getMessage(), e);
-                throw new InternalServerErrorException(e);
+        } catch (FeignException fe) {
+            int causedByStatus = fe.status();
+
+            switch (causedByStatus) {
+                case 404:
+                    logger.info("consent not found");
+                    logger.debug(fe.getMessage(), fe);
+                    throw new NoDocumentFoundException();
+                default:
+                    logger.error(fe.getMessage(), fe);
+                    throw new InternalServerErrorException(fe);
             }
         }
         logger.debug(() -> "Invoking context-handler feign client - End" + xacmlResponseDto.toString());

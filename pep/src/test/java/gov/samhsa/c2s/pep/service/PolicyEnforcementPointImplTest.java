@@ -190,9 +190,7 @@ public class PolicyEnforcementPointImplTest {
         final DSSResponse dssResponse = DSSResponse.builder().encoding(documentEncoding.name()).segmentedDocument(segmentedDocumentBytes).build();
         FeignException e = mock(FeignException.class);
         when(e.status()).thenReturn(HttpStatus.NOT_FOUND.value());
-        HystrixRuntimeException h = mock(HystrixRuntimeException.class);
-        when(h.getCause()).thenReturn(e);
-        when(contextHandler.enforcePolicy(xacmlRequest)).thenThrow(h);
+        when(contextHandler.enforcePolicy(xacmlRequest)).thenThrow(e);
         when(dssService.segmentDocument(argThat(matching(
                 dssRequest -> document.equals(
                         new String(dssRequest.getDocument(), documentEncoding)) &&
@@ -252,9 +250,7 @@ public class PolicyEnforcementPointImplTest {
         final DSSResponse dssResponse = DSSResponse.builder().encoding(documentEncoding.name()).segmentedDocument(segmentedDocumentBytes).build();
         FeignException e = mock(FeignException.class);
         when(e.status()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        HystrixRuntimeException h = mock(HystrixRuntimeException.class);
-        when(h.getCause()).thenReturn(e);
-        when(contextHandler.enforcePolicy(xacmlRequest)).thenThrow(h);
+        when(contextHandler.enforcePolicy(xacmlRequest)).thenThrow(e);
         when(dssService.segmentDocument(argThat(matching(
                 dssRequest -> document.equals(
                         new String(dssRequest.getDocument(), documentEncoding)) &&
