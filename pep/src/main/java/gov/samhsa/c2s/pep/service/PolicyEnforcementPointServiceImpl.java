@@ -1,6 +1,5 @@
 package gov.samhsa.c2s.pep.service;
 
-import com.netflix.hystrix.exception.HystrixRuntimeException;
 import feign.FeignException;
 import gov.samhsa.c2s.common.log.Logger;
 import gov.samhsa.c2s.common.log.LoggerFactory;
@@ -15,11 +14,10 @@ import gov.samhsa.c2s.pep.service.dto.AccessRequestDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseWithDocumentDto;
 import gov.samhsa.c2s.pep.service.exception.DssClientInterfaceException;
-import gov.samhsa.c2s.pep.service.exception.InternalServerErrorException;
+import gov.samhsa.c2s.pep.service.exception.PepException;
 import gov.samhsa.c2s.pep.service.exception.InvalidDocumentException;
 import gov.samhsa.c2s.pep.service.exception.NoDocumentFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -104,7 +102,7 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
                     throw new NoDocumentFoundException();
                 default:
                     logger.error(fe.getMessage(), fe);
-                    throw new InternalServerErrorException(fe);
+                    throw new PepException(fe);
             }
         }
         logger.debug(() -> "Invoking context-handler feign client - End" + xacmlResponseDto.toString());
@@ -112,7 +110,4 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
         return xacmlResponseDto;
     }
 
-    private HttpStatus getHttpStatus(FeignException e) {
-        return HttpStatus.valueOf(e.status());
-    }
 }

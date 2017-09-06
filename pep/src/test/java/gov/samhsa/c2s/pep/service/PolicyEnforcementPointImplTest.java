@@ -1,6 +1,5 @@
 package gov.samhsa.c2s.pep.service;
 
-import com.netflix.hystrix.exception.HystrixRuntimeException;
 import feign.FeignException;
 import gov.samhsa.c2s.pep.infrastructure.ContextHandlerService;
 import gov.samhsa.c2s.pep.infrastructure.DssService;
@@ -12,7 +11,7 @@ import gov.samhsa.c2s.pep.infrastructure.dto.XacmlResponseDto;
 import gov.samhsa.c2s.pep.service.dto.AccessRequestDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseWithDocumentDto;
-import gov.samhsa.c2s.pep.service.exception.InternalServerErrorException;
+import gov.samhsa.c2s.pep.service.exception.PepException;
 import gov.samhsa.c2s.pep.service.exception.NoDocumentFoundException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -231,7 +230,7 @@ public class PolicyEnforcementPointImplTest {
     @Test
     public void accessDocument_When_Context_Hander_Returns_Internal_Server_Error_Status() throws Exception {
         // Arrange
-        thrown.expect(InternalServerErrorException.class);
+        thrown.expect(PepException.class);
         final String recipientNpi = "recipientNpi";
         final String intermediaryNpi = "intermediaryNpi";
         final SubjectPurposeOfUse purposeOfUse = SubjectPurposeOfUse.HEALTHCARE_TREATMENT;
