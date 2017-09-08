@@ -23,13 +23,17 @@
         <java.version>1.8</java.version>
         <spring.cloud.version>Dalston.SR3</spring.cloud.version>
         <lombok.version>1.16.6</lombok.version>
-        <c2s.common-libraries.version>1.12.0</c2s.common-libraries.version>
         <c2s.document-transformer.version>1.4.0</c2s.document-transformer.version>
         <saxon-HE.version>9.6.0-3</saxon-HE.version>
         <!-- Test -->
         <jsonpath.version>2.2.0</jsonpath.version>
         <docker.maven.version>0.4.13</docker.maven.version>
         <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
+        <c2s.document-converter.version>1.16.0</c2s.document-converter.version>
+        <c2s.document-transformers.version>1.16.0</c2s.document-transformers.version>
+        <c2s.document-accessors.version>1.16.0</c2s.document-accessors.version>
+        <c2s.logger-wrapper.version>1.16.0</c2s.logger-wrapper.version>
+        <c2s.common-unit.version>1.16.0</c2s.common-unit.version>
     </properties>
 
     <dependencies>
@@ -83,12 +87,12 @@
         <dependency>
             <groupId>gov.samhsa.c2s</groupId>
             <artifactId>document-converter</artifactId>
-            <version>${c2s.common-libraries.version}</version>
+            <version>${c2s.document-converter.version}</version>
         </dependency>
         <dependency>
             <groupId>gov.samhsa.c2s</groupId>
             <artifactId>document-transformer</artifactId>
-            <version>${c2s.common-libraries.version}</version>
+            <version>${c2s.document-transformers.version}</version>
         </dependency>
         <dependency>
             <groupId>net.sf.saxon</groupId>
@@ -98,12 +102,12 @@
         <dependency>
             <groupId>gov.samhsa.c2s</groupId>
             <artifactId>document-accessor</artifactId>
-            <version>${c2s.common-libraries.version}</version>
+            <version>${c2s.document-accessors.version}</version>
         </dependency>
         <dependency>
             <groupId>gov.samhsa.c2s</groupId>
             <artifactId>logger-wrapper</artifactId>
-            <version>${c2s.common-libraries.version}</version>
+            <version>${c2s.logger-wrapper.version}</version>
         </dependency>
         <!-- Testing -->
         <dependency>
@@ -114,7 +118,7 @@
         <dependency>
             <groupId>gov.samhsa.c2s</groupId>
             <artifactId>common-unit</artifactId>
-            <version>${c2s.common-libraries.version}</version>
+            <version>${c2s.common-unit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
