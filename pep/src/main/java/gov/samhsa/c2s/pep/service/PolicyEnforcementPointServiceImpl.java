@@ -1,6 +1,8 @@
 package gov.samhsa.c2s.pep.service;
 
 import feign.FeignException;
+import gov.samhsa.c2s.common.document.converter.DocumentXmlConverter;
+import gov.samhsa.c2s.common.document.transformer.XmlTransformer;
 import gov.samhsa.c2s.common.log.Logger;
 import gov.samhsa.c2s.common.log.LoggerFactory;
 import gov.samhsa.c2s.pep.infrastructure.ContextHandlerService;
@@ -14,25 +16,44 @@ import gov.samhsa.c2s.pep.service.dto.AccessRequestDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseWithDocumentDto;
 import gov.samhsa.c2s.pep.service.exception.DssClientInterfaceException;
-import gov.samhsa.c2s.pep.service.exception.PepException;
 import gov.samhsa.c2s.pep.service.exception.InvalidDocumentException;
 import gov.samhsa.c2s.pep.service.exception.NoDocumentFoundException;
+import gov.samhsa.c2s.pep.service.exception.PepException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Document;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
 public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPointService {
 
     private static final String PERMIT = "permit";
+    private final static String CDA_XSL_ENGLISH = "CDA.xsl";
+
+    private static final String ENGLISH_CODE = "en";
+    private static final String SPANISH_CODE = "es";
+
     private final Logger logger = LoggerFactory.getLogger(PolicyEnforcementPointServiceImpl.class);
 
-    @Autowired
-    private ContextHandlerService contextHandler;
+    private final DocumentXmlConverter documentXmlConverter;
+
+    private final XmlTransformer xmlTransformer;
+
+    private final ContextHandlerService contextHandler;
+
+    private final DssService dssService;
 
     @Autowired
-    private DssService dssService;
+    public PolicyEnforcementPointServiceImpl(DocumentXmlConverter documentXmlConverter, XmlTransformer xmlTransformer, ContextHandlerService contextHandler, DssService dssService) {
+        this.documentXmlConverter = documentXmlConverter;
+        this.xmlTransformer = xmlTransformer;
+        this.contextHandler = contextHandler;
+        this.dssService = dssService;
+    }
 
     @Override
     public AccessResponseDto accessDocument(AccessRequestDto accessRequest) {
@@ -53,7 +74,8 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
                 logger.debug("Invoking dss feign client - Start");
                 dssResponse = dssService.segmentDocument(dssRequest);
                 logger.debug("Invoking dss feign client - End");
-            } catch (FeignException fe) {
+            }
+            catch (FeignException fe) {
                 int causedByStatus = fe.status();
 
                 switch (causedByStatus) {
@@ -69,14 +91,54 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
                 }
             }
             logger.debug(dssResponse::toString);
-            final AccessResponseDto accessResponse = AccessResponseWithDocumentDto.from(dssResponse, xacmlResponse);
-            logger.debug(accessResponse::toString);
+            AccessResponseWithDocumentDto accessResponseWithDocument = (AccessResponseWithDocumentDto) AccessResponseWithDocumentDto.from(dssResponse, xacmlResponse);
+            accessResponseWithDocument.setSegmentedDocumentAsHTML(Optional.of(getSegmentedDocumentasHTML(accessResponseWithDocument.getSegmentedDocument(), accessResponseWithDocument.getSegmentedDocumentEncoding())));
+            logger.debug(accessResponseWithDocument::toString);
             logger.info("Completed PolicyEnforcementPointService.accessDocument flow, returning response");
-            return accessResponse;
+            return accessResponseWithDocument;
         } else {
             final AccessResponseDto accessResponse = AccessResponseDto.from(xacmlResponse);
             logger.debug(accessResponse::toString);
             return accessResponse;
+        }
+    }
+
+    private byte[] getSegmentedDocumentasHTML(byte[] segmentedDocument, String encoding) {
+        String segmentedClinicalDocument;
+        switch (encoding) {
+            case "UTF_8":
+                segmentedClinicalDocument = new String(segmentedDocument, StandardCharsets.UTF_8);
+                break;
+            default:
+                segmentedClinicalDocument = new String(segmentedDocument, StandardCharsets.UTF_8);
+                break;
+        }
+        final Document xmlDoc = documentXmlConverter.loadDocument(segmentedClinicalDocument);
+
+        // xslt transformation
+        final String xslUrl = Thread.currentThread().getContextClassLoader().getResource(getLocaleSpecificCdaXSL()).toString();
+        final String output = xmlTransformer.transform(xmlDoc, xslUrl, Optional.empty(), Optional.empty());
+        return output.getBytes();
+    }
+
+    private static String getLocaleSpecificCdaXSL() {
+        Locale selectedLocale = getLocaleFromContext();
+        switch (selectedLocale.getLanguage()) {
+            case ENGLISH_CODE:
+                return CDA_XSL_ENGLISH;
+            case SPANISH_CODE:
+                //TODO: ADD an XSL for Spanish
+                return CDA_XSL_ENGLISH;
+            default:
+                return CDA_XSL_ENGLISH;
+        }
+    }
+
+    private static Locale getLocaleFromContext() {
+        if (LocaleContextHolder.getLocale().getLanguage().isEmpty()) {
+            return Locale.US;
+        } else {
+            return LocaleContextHolder.getLocale();
         }
     }
 
@@ -92,7 +154,8 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
         XacmlResponseDto xacmlResponseDto;
         try {
             xacmlResponseDto = contextHandler.enforcePolicy(xacmlRequest);
-        } catch (FeignException fe) {
+        }
+        catch (FeignException fe) {
             int causedByStatus = fe.status();
 
             switch (causedByStatus) {
