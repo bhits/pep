@@ -33,7 +33,8 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
 
     private static final String PERMIT = "permit";
     private final static String CDA_XSL_ENGLISH = "CDA.xsl";
-
+    //TODO: ADD an XSL for Spanish
+    private final static String CDA_XSL_SPANISH= "CDA.xsl";
     private static final String ENGLISH_CODE = "en";
     private static final String SPANISH_CODE = "es";
 
@@ -56,7 +57,7 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
     }
 
     @Override
-    public AccessResponseDto accessDocument(AccessRequestDto accessRequest) {
+    public AccessResponseDto accessDocument(AccessRequestDto accessRequest, Optional<Boolean> getSegmentedDocumentAsHTML) {
         logger.info("Initiating PolicyEnforcementPointService.accessDocument flow");
         final XacmlRequestDto xacmlRequest = accessRequest.getXacmlRequest();
         logger.debug(xacmlRequest::toString);
@@ -92,7 +93,10 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
             }
             logger.debug(dssResponse::toString);
             AccessResponseWithDocumentDto accessResponseWithDocument = (AccessResponseWithDocumentDto) AccessResponseWithDocumentDto.from(dssResponse, xacmlResponse);
-            accessResponseWithDocument.setSegmentedDocumentAsHTML(Optional.of(getSegmentedDocumentasHTML(accessResponseWithDocument.getSegmentedDocument(), accessResponseWithDocument.getSegmentedDocumentEncoding())));
+            if(getSegmentedDocumentAsHTML.isPresent() && getSegmentedDocumentAsHTML.get()){
+                logger.info("Returning XML as well as HTML format of the segmented document");
+                accessResponseWithDocument.setSegmentedDocumentAsHTML(Optional.of(getSegmentedDocumentasHTML(accessResponseWithDocument.getSegmentedDocument(), accessResponseWithDocument.getSegmentedDocumentEncoding())));
+            }
             logger.debug(accessResponseWithDocument::toString);
             logger.info("Completed PolicyEnforcementPointService.accessDocument flow, returning response");
             return accessResponseWithDocument;
@@ -127,8 +131,7 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
             case ENGLISH_CODE:
                 return CDA_XSL_ENGLISH;
             case SPANISH_CODE:
-                //TODO: ADD an XSL for Spanish
-                return CDA_XSL_ENGLISH;
+                return CDA_XSL_SPANISH;
             default:
                 return CDA_XSL_ENGLISH;
         }

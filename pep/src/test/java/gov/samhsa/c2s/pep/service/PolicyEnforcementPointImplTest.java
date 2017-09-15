@@ -85,7 +85,7 @@ public class PolicyEnforcementPointImplTest {
         final AccessRequestDto request = AccessRequestDto.builder().xacmlRequest(xacmlRequest).document(Optional.of(documentBytes)).documentEncoding(Optional.of(documentEncoding.name())).build();
 
         // Act
-        final AccessResponseDto response = sut.accessDocument(request);
+        final AccessResponseDto response = sut.accessDocument(request, Optional.empty());
 
         // Assert
         assertTrue(response instanceof AccessResponseWithDocumentDto);
@@ -143,7 +143,7 @@ public class PolicyEnforcementPointImplTest {
         final AccessRequestDto request = AccessRequestDto.builder().xacmlRequest(xacmlRequest).document(Optional.of(documentBytes)).documentEncoding(Optional.of(documentEncoding.name())).build();
 
         // Act
-        final AccessResponseDto response = sut.accessDocument(request);
+        final AccessResponseDto response = sut.accessDocument(request, Optional.empty());
 
         // Assert
         assertTrue(response instanceof AccessResponseWithDocumentDto);
@@ -203,7 +203,7 @@ public class PolicyEnforcementPointImplTest {
         final AccessRequestDto request = AccessRequestDto.builder().xacmlRequest(xacmlRequest).document(Optional.of(documentBytes)).documentEncoding(Optional.of(documentEncoding.name())).build();
 
         // Act
-        final AccessResponseDto response = sut.accessDocument(request);
+        final AccessResponseDto response = sut.accessDocument(request, Optional.empty());
 
         // Assert
         assertNotNull(response);
@@ -263,7 +263,7 @@ public class PolicyEnforcementPointImplTest {
         final AccessRequestDto request = AccessRequestDto.builder().xacmlRequest(xacmlRequest).document(Optional.of(documentBytes)).documentEncoding(Optional.of(documentEncoding.name())).build();
 
         // Act
-        final AccessResponseDto response = sut.accessDocument(request);
+        final AccessResponseDto response = sut.accessDocument(request, Optional.empty());
 
         // Assert
         assertNotNull(response);
