@@ -6,9 +6,9 @@ The PEP provides service for segmenting CCD documents according to a patient's g
 
 # Supported Source Code Tags and Current `Dockerfile` Link
 
-[`2.0.0 (latest)`](https://github.com/bhits-dev/pep/releases/tag/2.0.0)
+[`2.1.0 (latest)`](https://github.com/bhits-dev/pep/releases/tag/2.1.0), [`2.0.0`](https://github.com/bhits-dev/pep/releases/tag/2.0.0)
 
-[`Current Dockerfile`](https://github.com/bhits-dev/pep/blob/master/pep/src/main/docker/Dockerfile)
+[`Current Dockerfile`](../pep/src/main/docker/Dockerfile)
 
 For more information about this image, the source code, and its history, please see the [GitHub repository](https://github.com/bhits-dev/pep).
 
