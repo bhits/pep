@@ -22,8 +22,10 @@ import gov.samhsa.c2s.pep.service.exception.PepException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Optional;
@@ -95,7 +97,7 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
             AccessResponseWithDocumentDto accessResponseWithDocument = (AccessResponseWithDocumentDto) AccessResponseWithDocumentDto.from(dssResponse, xacmlResponse);
             if(getSegmentedDocumentAsHTML.isPresent() && getSegmentedDocumentAsHTML.get()){
                 logger.info("Returning XML as well as HTML format of the segmented document");
-                accessResponseWithDocument.setSegmentedDocumentAsHTML(Optional.of(getSegmentedDocumentasHTML(accessResponseWithDocument.getSegmentedDocument(), accessResponseWithDocument.getSegmentedDocumentEncoding())));
+                accessResponseWithDocument.setSegmentedDocumentAsHTML(Optional.of(convertSegmentedDocumentXmlToHtml (accessResponseWithDocument.getSegmentedDocument(), accessResponseWithDocument.getSegmentedDocumentEncoding())));
             }
             logger.debug(accessResponseWithDocument::toString);
             logger.info("Completed PolicyEnforcementPointService.accessDocument flow, returning response");
@@ -107,22 +109,16 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
         }
     }
 
-    private byte[] getSegmentedDocumentasHTML(byte[] segmentedDocument, String encoding) {
-        String segmentedClinicalDocument;
-        switch (encoding) {
-            case "UTF_8":
-                segmentedClinicalDocument = new String(segmentedDocument, StandardCharsets.UTF_8);
-                break;
-            default:
-                segmentedClinicalDocument = new String(segmentedDocument, StandardCharsets.UTF_8);
-                break;
-        }
+    private byte[] convertSegmentedDocumentXmlToHtml (byte[] segmentedDocument, String encoding) {
+
+        final Charset encodingCharset = StringUtils.hasText(encoding) ? Charset.forName(encoding) : StandardCharsets.UTF_8;
+        final String segmentedClinicalDocument = new String(segmentedDocument, encodingCharset);
         final Document xmlDoc = documentXmlConverter.loadDocument(segmentedClinicalDocument);
 
         // xslt transformation
         final String xslUrl = Thread.currentThread().getContextClassLoader().getResource(getLocaleSpecificCdaXSL()).toString();
         final String output = xmlTransformer.transform(xmlDoc, xslUrl, Optional.empty(), Optional.empty());
-        return output.getBytes();
+        return output.getBytes(encodingCharset);
     }
 
     private static String getLocaleSpecificCdaXSL() {
