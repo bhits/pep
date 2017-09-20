@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Optional;
 
 import static gov.samhsa.c2s.common.unit.matcher.ArgumentMatchers.matching;
 import static org.hamcrest.Matchers.is;
@@ -82,7 +83,7 @@ public class PolicyEnforcementPointRestControllerTest {
                 req -> req.getXacmlRequest().equals(xacmlRequest) &&
                         document.equals(new String(req.getDocument().get(), documentEncoding)) &&
                         documentEncodingString.equals(req.getDocumentEncoding().get())
-        )))).thenReturn(response);
+        )), eq(Optional.empty()))).thenReturn(response);
 
         // Act and Assert
         mvc.perform(post("/access")
@@ -95,7 +96,7 @@ public class PolicyEnforcementPointRestControllerTest {
                 req -> req.getXacmlRequest().equals(xacmlRequest) &&
                         document.equals(new String(req.getDocument().get(), documentEncoding)) &&
                         documentEncodingString.equals(req.getDocumentEncoding().get())
-        )));
+        )), eq(Optional.empty()));
     }
 
     @Test
@@ -121,7 +122,7 @@ public class PolicyEnforcementPointRestControllerTest {
                 req -> req.getXacmlRequest().equals(xacmlRequest) &&
                         document.equals(new String(req.getDocument().get(), documentEncoding)) &&
                         documentEncodingString.equals(req.getDocumentEncoding().get())
-        )))).thenThrow(NoDocumentFoundException.class);
+        )), eq(Optional.empty()))).thenThrow(NoDocumentFoundException.class);
 
         // Act and Assert
         mvc.perform(post("/access")
@@ -132,6 +133,6 @@ public class PolicyEnforcementPointRestControllerTest {
                 req -> req.getXacmlRequest().equals(xacmlRequest) &&
                         document.equals(new String(req.getDocument().get(), documentEncoding)) &&
                         documentEncodingString.equals(req.getDocumentEncoding().get())
-        )));
+        )), eq(Optional.empty()));
     }
 }

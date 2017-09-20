@@ -1,6 +1,8 @@
 package gov.samhsa.c2s.pep.service;
 
 import feign.FeignException;
+import gov.samhsa.c2s.common.document.converter.DocumentXmlConverter;
+import gov.samhsa.c2s.common.document.transformer.XmlTransformer;
 import gov.samhsa.c2s.common.log.Logger;
 import gov.samhsa.c2s.common.log.LoggerFactory;
 import gov.samhsa.c2s.pep.infrastructure.ContextHandlerService;
@@ -14,28 +16,50 @@ import gov.samhsa.c2s.pep.service.dto.AccessRequestDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseDto;
 import gov.samhsa.c2s.pep.service.dto.AccessResponseWithDocumentDto;
 import gov.samhsa.c2s.pep.service.exception.DssClientInterfaceException;
-import gov.samhsa.c2s.pep.service.exception.PepException;
 import gov.samhsa.c2s.pep.service.exception.InvalidDocumentException;
 import gov.samhsa.c2s.pep.service.exception.NoDocumentFoundException;
+import gov.samhsa.c2s.pep.service.exception.PepException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.w3c.dom.Document;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
 public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPointService {
 
     private static final String PERMIT = "permit";
+    private final static String CDA_XSL_ENGLISH = "CDA.xsl";
+    //TODO: ADD an XSL for Spanish
+    private final static String CDA_XSL_SPANISH= "CDA.xsl";
+    private static final String ENGLISH_CODE = "en";
+    private static final String SPANISH_CODE = "es";
+
     private final Logger logger = LoggerFactory.getLogger(PolicyEnforcementPointServiceImpl.class);
 
-    @Autowired
-    private ContextHandlerService contextHandler;
+    private final DocumentXmlConverter documentXmlConverter;
+
+    private final XmlTransformer xmlTransformer;
+
+    private final ContextHandlerService contextHandler;
+
+    private final DssService dssService;
 
     @Autowired
-    private DssService dssService;
+    public PolicyEnforcementPointServiceImpl(DocumentXmlConverter documentXmlConverter, XmlTransformer xmlTransformer, ContextHandlerService contextHandler, DssService dssService) {
+        this.documentXmlConverter = documentXmlConverter;
+        this.xmlTransformer = xmlTransformer;
+        this.contextHandler = contextHandler;
+        this.dssService = dssService;
+    }
 
     @Override
-    public AccessResponseDto accessDocument(AccessRequestDto accessRequest) {
+    public AccessResponseDto accessDocument(AccessRequestDto accessRequest, Optional<Boolean> getSegmentedDocumentAsHTML) {
         logger.info("Initiating PolicyEnforcementPointService.accessDocument flow");
         final XacmlRequestDto xacmlRequest = accessRequest.getXacmlRequest();
         logger.debug(xacmlRequest::toString);
@@ -53,7 +77,8 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
                 logger.debug("Invoking dss feign client - Start");
                 dssResponse = dssService.segmentDocument(dssRequest);
                 logger.debug("Invoking dss feign client - End");
-            } catch (FeignException fe) {
+            }
+            catch (FeignException fe) {
                 int causedByStatus = fe.status();
 
                 switch (causedByStatus) {
@@ -69,14 +94,50 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
                 }
             }
             logger.debug(dssResponse::toString);
-            final AccessResponseDto accessResponse = AccessResponseWithDocumentDto.from(dssResponse, xacmlResponse);
-            logger.debug(accessResponse::toString);
+            AccessResponseWithDocumentDto accessResponseWithDocument = (AccessResponseWithDocumentDto) AccessResponseWithDocumentDto.from(dssResponse, xacmlResponse);
+            if(getSegmentedDocumentAsHTML.isPresent() && getSegmentedDocumentAsHTML.get()){
+                logger.info("Returning XML as well as HTML format of the segmented document");
+                accessResponseWithDocument.setSegmentedDocumentAsHTML(Optional.of(convertSegmentedDocumentXmlToHtml (accessResponseWithDocument.getSegmentedDocument(), accessResponseWithDocument.getSegmentedDocumentEncoding())));
+            }
+            logger.debug(accessResponseWithDocument::toString);
             logger.info("Completed PolicyEnforcementPointService.accessDocument flow, returning response");
-            return accessResponse;
+            return accessResponseWithDocument;
         } else {
             final AccessResponseDto accessResponse = AccessResponseDto.from(xacmlResponse);
             logger.debug(accessResponse::toString);
             return accessResponse;
+        }
+    }
+
+    private byte[] convertSegmentedDocumentXmlToHtml (byte[] segmentedDocument, String encoding) {
+
+        final Charset encodingCharset = StringUtils.hasText(encoding) ? Charset.forName(encoding) : StandardCharsets.UTF_8;
+        final String segmentedClinicalDocument = new String(segmentedDocument, encodingCharset);
+        final Document xmlDoc = documentXmlConverter.loadDocument(segmentedClinicalDocument);
+
+        // xslt transformation
+        final String xslUrl = Thread.currentThread().getContextClassLoader().getResource(getLocaleSpecificCdaXSL()).toString();
+        final String output = xmlTransformer.transform(xmlDoc, xslUrl, Optional.empty(), Optional.empty());
+        return output.getBytes(encodingCharset);
+    }
+
+    private static String getLocaleSpecificCdaXSL() {
+        Locale selectedLocale = getLocaleFromContext();
+        switch (selectedLocale.getLanguage()) {
+            case ENGLISH_CODE:
+                return CDA_XSL_ENGLISH;
+            case SPANISH_CODE:
+                return CDA_XSL_SPANISH;
+            default:
+                return CDA_XSL_ENGLISH;
+        }
+    }
+
+    private static Locale getLocaleFromContext() {
+        if (LocaleContextHolder.getLocale().getLanguage().isEmpty()) {
+            return Locale.US;
+        } else {
+            return LocaleContextHolder.getLocale();
         }
     }
 
@@ -92,7 +153,8 @@ public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPoint
         XacmlResponseDto xacmlResponseDto;
         try {
             xacmlResponseDto = contextHandler.enforcePolicy(xacmlRequest);
-        } catch (FeignException fe) {
+        }
+        catch (FeignException fe) {
             int causedByStatus = fe.status();
 
             switch (causedByStatus) {

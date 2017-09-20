@@ -11,10 +11,12 @@ import lombok.ToString;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import java.util.Optional;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(callSuper = true, exclude = "segmentedDocument")
+@ToString(callSuper = true, exclude = {"segmentedDocument", "segmentedDocumentAsHTML"})
 @EqualsAndHashCode(callSuper = true)
 public class AccessResponseWithDocumentDto extends AccessResponseDto {
 
@@ -24,11 +26,14 @@ public class AccessResponseWithDocumentDto extends AccessResponseDto {
     @NotBlank
     private String segmentedDocumentEncoding;
 
+    private Optional<byte[]> segmentedDocumentAsHTML;
+
     @Builder
-    public AccessResponseWithDocumentDto(String decision, byte[] segmentedDocument, String segmentedDocumentEncoding) {
+    public AccessResponseWithDocumentDto(String decision, byte[] segmentedDocument, String segmentedDocumentEncoding, Optional<byte[]> segmentedDocumentAsHTML) {
         this.decision = decision;
         this.segmentedDocument = segmentedDocument;
         this.segmentedDocumentEncoding = segmentedDocumentEncoding;
+        this.segmentedDocumentAsHTML = segmentedDocumentAsHTML;
     }
 
     public static AccessResponseDto from(DSSResponse dssResponse) {
