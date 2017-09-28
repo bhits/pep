@@ -34,9 +34,8 @@ import java.util.Optional;
 public class PolicyEnforcementPointServiceImpl implements PolicyEnforcementPointService {
 
     private static final String PERMIT = "permit";
-    private final static String CDA_XSL_ENGLISH = "CDA.xsl";
-    //TODO: ADD an XSL for Spanish
-    private final static String CDA_XSL_SPANISH= "CDA.xsl";
+    private final static String CDA_XSL_ENGLISH = "CDA_ENGLISH.xsl";
+    private final static String CDA_XSL_SPANISH = "CDA_SPANISH.xsl";
     private static final String ENGLISH_CODE = "en";
     private static final String SPANISH_CODE = "es";
 
